@@ -1,0 +1,20 @@
+{
+  "name": "badapple1",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "to-png": "node ./src/mp4ToPngs.js",
+    "to-svg": "node ./src/pngToSvg.js",
+    "play": "node ./src/player.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bmp-js": "^0.1.0",
+    "fluent-ffmpeg": "^2.1.2",
+    "pngjs": "^7.0.0",
+    "potrace": "^2.1.8"
+  }
+}

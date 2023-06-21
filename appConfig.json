@@ -1,0 +1,6 @@
+{
+  "host": "localhost",
+  "port": 3000,
+  "framerate": 30,
+  "lightSensitivity": 382 
+}

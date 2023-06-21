@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <button
+      onclick="start(this)"
+      style="position: absolute; top: 20px; left: 20px"
+    >
+      start
+    </button>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="642"
+      height="480"
+      viewBox="0 0 642 480"
+      version="1.1"
+      id="main-svg"
+    >
+      <path id="path" d="" stroke="none" fill="black" fill-rule="evenodd" />
+    </svg>
+  </body>
+  <script>
+    const mainEl = document.getElementById("path");
+    const ogSize = 360;
+    const targetSize = document.getElementById("main-svg").clientHeight;
+    const sizeComparison = targetSize / ogSize;
+
+    const start = async (btn) => {
+      btn.remove();
+      const framerate =
+        1000 /
+        ((await fetch("./config/appConfig.json").then((res) => res.json()))
+          .framerate +
+          0.4);
+      let curretBatch = 0;
+      let paths;
+      let nextPath;
+
+      function resizePath(pathInput) {
+        return pathInput
+          .split(" ")
+          .map((x) => {
+            if (x.includes(",")) {
+              const number = Number(x.replace(",", ""));
+              return round3Decimals(number * sizeComparison) + ",";
+            }
+            if (isNaN(x)) return x;
+
+            return round3Decimals(Number(x) * sizeComparison);
+          })
+          .join(" ");
+      }
+
+      function round3Decimals(number = 0) {
+        return Math.floor(number * 1000) / 1000;
+      }
+
+      const loadNextBatch = async () => {
+        console.log("loading next batch");
+        try {
+          nextPath = await fetch("./assets/paths" + curretBatch + ".json")
+            .then((x) => x.json())
+            .catch((err) => {
+              throw err;
+            });
+        } catch (e) {
+          nextPath = null;
+        }
+      };
+
+      const switchBatch = () => {
+        console.log("switching paths");
+        curretBatch++;
+        paths = nextPath;
+        delete nextPath;
+        nextPath = null;
+      };
+
+      await loadNextBatch();
+      switchBatch();
+
+      let i = 0;
+      const audio = document.createElement("audio");
+      audio.setAttribute("src", "./assets/bad-apple.wav");
+      document.body.appendChild(audio);
+
+      const startAnimation = () => {
+        mainEl.setAttribute("d", paths[i]);
+
+        if (i === 800) {
+          loadNextBatch();
+        }
+        i++;
+        if (i < paths.length) {
+          setTimeout(startAnimation, framerate);
+        } else if (nextPath) {
+          i = 0;
+          switchBatch();
+          setTimeout(startAnimation, framerate);
+        }
+      };
+      audio.play();
+      audio.addEventListener("play", startAnimation);
+    };
+  </script>
+</html>
