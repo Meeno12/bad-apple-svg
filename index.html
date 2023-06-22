@@ -18,29 +18,38 @@
       height="480"
       viewBox="0 0 642 480"
       version="1.1"
-      id="main-svg"
+      id="bad-apple-svg"
     >
-      <path id="path" d="" stroke="none" fill="black" fill-rule="evenodd" />
+      <path
+        id="bad-apple-path"
+        d=""
+        stroke="none"
+        fill="black"
+        fill-rule="evenodd"
+      />
     </svg>
   </body>
   <script>
-    const mainEl = document.getElementById("path");
+    const mainEl = document.getElementById("bad-apple-path");
     const ogSize = 360;
-    const targetSize = document.getElementById("main-svg").clientHeight;
+    const targetSize = document.getElementById("bad-apple-svg").clientHeight;
     const sizeComparison = targetSize / ogSize;
 
-    const start = async (btn) => {
-      btn.remove();
+    const start = async () => {
       const framerate =
         1000 /
-        ((await fetch("./config/appConfig.json").then((res) => res.json()))
-          .framerate +
-          0.4);
-      let curretBatch = 0;
-      let paths;
-      let nextPath;
+        (await fetch("./config/appConfig.json").then((res) => res.json()))
+          .framerate;
+      let curretBatch = 0,
+        stop = false,
+        paths,
+        nextPath,
+        now,
+        then,
+        elapsed;
 
       function resizePath(pathInput) {
+        if (!pathInput) return pathInput;
         return pathInput
           .split(" ")
           .map((x) => {
@@ -88,23 +97,37 @@
       audio.setAttribute("src", "./assets/bad-apple.wav");
       document.body.appendChild(audio);
 
-      const startAnimation = () => {
-        mainEl.setAttribute("d", paths[i]);
+      const animate = () => {
+        if (stop) return;
 
-        if (i === 800) {
-          loadNextBatch();
-        }
-        i++;
-        if (i < paths.length) {
-          setTimeout(startAnimation, framerate);
-        } else if (nextPath) {
-          i = 0;
-          switchBatch();
-          setTimeout(startAnimation, framerate);
+        requestAnimationFrame(animate);
+
+        now = Date.now();
+        elapsed = now - then;
+
+        if (elapsed > framerate) {
+          then = now - (elapsed % framerate);
+
+          mainEl.setAttribute("d", resizePath(paths[i]));
+
+          if (i === 800) {
+            loadNextBatch();
+          }
+          i++;
+          if (i !== paths.length) return;
+          if (!nextPath) {
+            stop = true;
+          } else {
+            i = 0;
+            switchBatch();
+          }
         }
       };
       audio.play();
-      audio.addEventListener("play", startAnimation);
+      audio.addEventListener("play", () => {
+        then = Date.now();
+        animate();
+      });
     };
   </script>
 </html>
