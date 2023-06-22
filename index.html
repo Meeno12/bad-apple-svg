@@ -35,7 +35,8 @@
     const targetSize = document.getElementById("bad-apple-svg").clientHeight;
     const sizeComparison = targetSize / ogSize;
 
-    const start = async () => {
+    const start = async (btn) => {
+      btn.remove();
       const framerate =
         1000 /
         (await fetch("./config/appConfig.json").then((res) => res.json()))
